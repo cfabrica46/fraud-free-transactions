@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseFilters } from '@nestjs/common';
 import { TransactionService } from '../services/transaction.service';
 import { CreateTransactionDto } from '../dtos/create-transaction.dto';
 import { Transaction } from '../entities/transaction.entity';
+import { AllExceptionsFilter } from './transaction.filter';
 
 @Controller('transactions')
+@UseFilters(AllExceptionsFilter)
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 

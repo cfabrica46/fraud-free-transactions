@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Transaction } from '../entities/transaction.entity';
 import { CreateTransactionDto } from '../dtos/create-transaction.dto';
+import { TransactionRepository } from '../repositories/transaction.repository';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TransactionService {
+  constructor(private readonly transactionRepository: TransactionRepository) {}
+
   async createTransaction(
     createTransactionDto: CreateTransactionDto,
   ): Promise<Transaction> {
@@ -17,6 +21,6 @@ export class TransactionService {
     transaction.status = 'pending';
     transaction.createdAt = new Date();
 
-    return transaction;
+    return await this.transactionRepository.createTransaction(transaction);
   }
 }
