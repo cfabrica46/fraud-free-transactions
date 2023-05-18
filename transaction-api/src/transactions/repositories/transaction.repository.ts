@@ -87,4 +87,43 @@ export class TransactionRepository {
       client.release();
     }
   }
+
+  async updateTransactionStatus(
+    transactionId: string,
+    newStatus: string,
+  ): Promise<TransactionFull> {
+    const query = `
+      UPDATE transactions
+      SET status = $1
+      WHERE transaction_external_id = $2
+      RETURNING *
+    `;
+    const values = [newStatus, transactionId];
+
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(query, values);
+
+      const snakeCaseTransaction = result.rows[0];
+
+      const transaction: TransactionFull = new TransactionFull(
+        snakeCaseTransaction.transaction_external_id,
+        snakeCaseTransaction.account_external_id_debit,
+        snakeCaseTransaction.account_external_id_credit,
+        snakeCaseTransaction.transfer_type_id,
+        snakeCaseTransaction.value,
+        snakeCaseTransaction.status,
+        snakeCaseTransaction.created_at,
+      );
+
+      return transaction;
+    } catch (error) {
+      throw new HttpException(
+        'Error updating transaction' + error,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      client.release();
+    }
+  }
 }

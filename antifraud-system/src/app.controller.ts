@@ -1,12 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { AntiFraudService } from './app.service';
+import { TransactionFull } from './entities/transaction.entity';
 
 @Controller()
-export class AppController {
-  constructor(private readonly appService: AppService) {}
+export class AntiFraudController {
+  constructor(private readonly antiFraudService: AntiFraudService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @MessagePattern({
+    service: 'TRANSACTIONS_SERVICE',
+    action: 'transaction_created',
+  })
+  handleTransactionCreated(@Payload() transaction: TransactionFull) {
+    this.antiFraudService.handleTransactionCreated(transaction);
   }
 }
