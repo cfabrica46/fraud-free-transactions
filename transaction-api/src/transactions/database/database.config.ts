@@ -1,4 +1,4 @@
-import { Client } from 'pg';
+import { Client, types } from 'pg';
 
 const databaseConfig: Client = {
   user: 'cfabrica46',

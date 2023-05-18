@@ -1,6 +1,6 @@
 export class CreateTransactionDto {
   accountExternalIdDebit: string;
   accountExternalIdCredit: string;
-  transferTypeId: number;
+  transferTypeId: string;
   value: number;
 }
