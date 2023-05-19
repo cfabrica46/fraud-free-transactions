@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AntiFraudController } from './app.controller';
 import { AntiFraudService } from './app.service';
-import { KafkaModule } from './kafka/kafka.module';
-import { ClientKafka } from '@nestjs/microservices';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [KafkaModule],
+  imports: [HttpModule],
   controllers: [AntiFraudController],
-  providers: [AntiFraudService, ClientKafka],
+  providers: [AntiFraudService],
 })
 export class AntiFraudModule {}

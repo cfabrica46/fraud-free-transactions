@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { HttpService } from '@nestjs/axios';
 
 import {
   Transaction,
@@ -15,8 +15,7 @@ import { TransactionRepository } from '../repositories/transaction.repository';
 export class TransactionService {
   constructor(
     private readonly transactionRepository: TransactionRepository,
-
-    @Inject('ANTI_FRAUD_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly httpService: HttpService,
   ) {}
 
   async retrieveTransaction(
@@ -58,15 +57,21 @@ export class TransactionService {
       transaction,
     );
 
-    this.kafkaClient.emit('transaction_created', JSON.stringify(transaction));
+    try {
+      const response = await this.httpService
+        .post('http://antifraud-api:4000/', transaction)
+        .toPromise();
+    } catch (error) {
+      throw new Error('Error al crear la transacción: ' + error);
+    }
 
     return transaction;
   }
 
-  async updateTransaction(transaction: TransactionFull) {
-    // Lógica para manejar la transacción verificada
-
-    this.transactionRepository.updateTransactionStatus(
+  async updateTransaction(
+    transaction: TransactionFull,
+  ): Promise<TransactionFull> {
+    return await this.transactionRepository.updateTransactionStatus(
       transaction.transactionExternalId,
       transaction.status,
     );

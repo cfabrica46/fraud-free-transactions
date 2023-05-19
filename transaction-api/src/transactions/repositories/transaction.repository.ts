@@ -119,7 +119,7 @@ export class TransactionRepository {
       return transaction;
     } catch (error) {
       throw new HttpException(
-        'Error updating transaction' + error,
+        'Error updating transaction ' + error,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } finally {

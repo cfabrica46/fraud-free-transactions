@@ -1,36 +1,26 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import { Injectable } from '@nestjs/common';
 import { TransactionFull } from './entities/transaction.entity';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AntiFraudService {
-  constructor(
-    @Inject('ANTI_FRAUD_SERVICE') private readonly kafkaClient: ClientKafka,
-  ) {}
+  constructor(private readonly httpService: HttpService) {}
 
-  handleTransactionCreated(transaction: TransactionFull) {
+  async verifyTransaction(transaction: TransactionFull) {
     if (transaction.value > 1000) {
-      // Emitir un evento al API de Transacciones para rechazar la transacción
-      const rejectedTransaction = {
-        ...(transaction as TransactionFull),
-        status: 'rejected',
-      };
-
-      this.kafkaClient.emit(
-        'transaction_checked',
-        JSON.stringify(rejectedTransaction),
-      );
+      transaction.status = 'rejected';
     } else {
-      // Emitir un evento al API de Transacciones para aprobar la transacción
-      const approvedTransaction = {
-        ...transaction,
-        status: 'approved',
-      };
-
-      this.kafkaClient.emit(
-        'transaction_checked',
-        JSON.stringify(approvedTransaction),
-      );
+      transaction.status = 'approved';
     }
+
+    try {
+      const response = await this.httpService
+        .put('http://transaction-api:3000/transactions', transaction)
+        .toPromise();
+    } catch (error) {
+      throw new Error('Error al crear la transacción: ' + error);
+    }
+
+    return transaction;
   }
 }
