@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 
@@ -15,7 +15,8 @@ import { TransactionRepository } from '../repositories/transaction.repository';
 export class TransactionService {
   constructor(
     private readonly transactionRepository: TransactionRepository,
-    private readonly kafkaClient: ClientKafka,
+
+    @Inject('ANTI_FRAUD_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
   async retrieveTransaction(
@@ -36,7 +37,6 @@ export class TransactionService {
       fullTransaction.value,
       fullTransaction.createdAt,
     );
-    console.log(transaction);
 
     return transaction;
   }
@@ -58,14 +58,12 @@ export class TransactionService {
       transaction,
     );
 
-    // Emitir un evento al API de AntiFraude para que realice la verificación
-    this.kafkaClient.emit('transaction_created', transaction);
+    this.kafkaClient.emit('transaction_created', JSON.stringify(transaction));
 
     return transaction;
   }
 
-  @MessagePattern('transaction_checked')
-  handleTransactionChecked(transaction: TransactionFull) {
+  async updateTransaction(transaction: TransactionFull) {
     // Lógica para manejar la transacción verificada
 
     this.transactionRepository.updateTransactionStatus(

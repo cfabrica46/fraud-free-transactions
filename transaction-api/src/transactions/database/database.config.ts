@@ -1,9 +1,9 @@
 import { Client, types } from 'pg';
 
 const databaseConfig: Client = {
-  user: 'cfabrica46',
-  password: 'abcd',
-  host: 'localhost',
+  user: 'postgres',
+  password: 'postgres',
+  host: 'postgres',
   port: 5432,
   database: 'yape',
 };

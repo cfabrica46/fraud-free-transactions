@@ -2,28 +2,12 @@ import { Module } from '@nestjs/common';
 import { TransactionController } from './controllers/transaction.controller';
 import { TransactionService } from './services/transaction.service';
 import { DatabaseModule } from './database/database.module';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { KafkaModule } from './kafka/kafka.module';
+import { ClientKafka } from '@nestjs/microservices';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    ClientsModule.register([
-      {
-        name: 'ANTI_FRAUD_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'transactions-service',
-            brokers: ['localhost:9092'],
-          },
-          consumer: {
-            groupId: 'transactions-group',
-          },
-        },
-      },
-    ]),
-  ],
+  imports: [DatabaseModule, KafkaModule],
   controllers: [TransactionController],
-  providers: [TransactionService],
+  providers: [TransactionService, ClientKafka],
 })
 export class TransactionsModule {}
